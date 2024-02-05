@@ -1,7 +1,5 @@
 import unittest
-from .config_loader import load_config  # Use relative import
-
-from queue_simulation import Passenger, ServiceStation, QueueSimulation
+import Passenger from queue_simulation.py
 
 class TestPassenger(unittest.TestCase):
     def test_passenger_creation(self):
