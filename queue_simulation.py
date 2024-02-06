@@ -2,15 +2,15 @@ import random
 from collections import deque
 
 num_stations = 5
-arrival_rate = 1.5 # average arrival rate of a new passenger in minutes
-duration = 50 # duration of the simultion in minutes
+arrival_rate = 1 # average arrival rate of a new passenger in minutes
+duration = 100 # duration of the simultion in minutes
 policies = ["single_queue", "random_queue", "round_robin", "shortest_queue" ]
 
 # Represents arriving passenger
 class Passenger:
     def __init__(self, arrival_time):
         self.arrival_time = arrival_time # Stores arrival  time for the passenger
-        self.service_time = random.uniform(7.5, 10)  # Random service time between 7.5 and 10 minutes
+        self.service_time = random.uniform(5, 8)  # Random service time between 5 and 8 minutes
         self.start_service_time = None # later will store the time when service starts for passengers
 
 # Represents 5 Service Stations
@@ -32,7 +32,7 @@ class QueueSimulation:
         self.effective_duration = duration
         self.max_queue_length = 0
         self.stations = [ServiceStation() for _ in range(num_stations)] # creates 5 service stations
-        self.time = 0 
+        self.time = 0  # represents current time within simulation
         self.current_station = 0  # For round robin policy
         self.global_queue = deque()  # For single queue system
         self.total_passengers = []  # Keep track of all passengers
@@ -46,6 +46,8 @@ class QueueSimulation:
                 self.handle_arrivals() # checks if a new passenger arrived based on the arrival rate
             self.handle_departures() # checks to see if the passengers service is complete
             self.update_max_queue_length() 
+            if self.time % 100 == 0:  # Log at every 5-minute interval
+                self.log_queue_stats()
             self.time += 1 # moves the simulation forward
         self.effective_duration = self.time 
         self.calculate_results()
@@ -60,6 +62,16 @@ class QueueSimulation:
             for station in self.stations:
                 if len(station.queue) > station.max_queue_length:
                     station.max_queue_length = len(station.queue)
+                    
+    def log_queue_stats(self):
+        print(f"\nTime: {self.time} minutes")
+        if self.policy == "single_queue":
+            print(f"Global Queue Length: {len(self.global_queue)}", "passengers")
+
+        for i, station in enumerate(self.stations):
+            status = "Busy" if station.busy else "Idle"
+            current_passenger_wait = self.time - station.current_passenger.start_service_time if station.current_passenger else "N/A"
+            print(f"Station {i+1}: {status}, Passenger Queue Length: {len(station.queue)}, Current Passenger Service Time: {current_passenger_wait}")
     
     def any_passengers_remaining(self):
         stations_busy = any(station.busy for station in self.stations) # Check if any station is busy or if there are passengers in queues
@@ -126,19 +138,7 @@ class QueueSimulation:
 
 
     def calculate_results(self):
-        if len(self.total_passengers) > 0:
-            total_waiting_time = sum((p.start_service_time - p.arrival_time) for p in self.total_passengers if p.start_service_time is not None) # each passenger's waiting time is the difference between start service and arrival
-            avg_waiting_time = total_waiting_time / len([p for p in self.total_passengers if p.start_service_time is not None]) # only includes passengers who have started service
-            if any(p.start_service_time is not None for p in self.total_passengers):
-                max_waiting_time = max((p.start_service_time - p.arrival_time) for p in self.total_passengers if p.start_service_time is not None) # finds the longest waiting time
-            else:
-                max_waiting_time = 0
-        else:
-            avg_waiting_time = 0
-            max_waiting_time = 0
-            total_waiting_time = 0
-            
-       
+                   
         print(f"\nSimulation Duration in Minutes: {self.effective_duration}")
         if self.policy == "single_queue":
             print("Maximum Global Queue Length:", self.max_queue_length, "passengers")
@@ -149,22 +149,22 @@ class QueueSimulation:
         
         print(f"\nAverage Waiting Time:")
         for i, station in enumerate(self.stations):
-            avg_waiting_time = sum(station.waiting_times) / len(station.waiting_times)
+            avg_waiting_time = sum(station.waiting_times) / len(station.waiting_times) if station.waiting_times else 0
             print(f"Station {i + 1}: {avg_waiting_time:.2f} minutes")
             
         print(f"\nMaximum Waiting Time:")
         for i, station in enumerate(self.stations):
-            max_waiting_time = max(station.waiting_times)
-            print(f"Station {i + 1}: {max_waiting_time:.2f} minutes")
+            max_waiting_time = max(station.waiting_times) if station.waiting_times else 0
+            print(f"Station {i + 1}: {max_waiting_time:.2f} minutes") 
         
         print(f"\nService Station Occupancy:")
         for i, station in enumerate(self.stations):
             occupancy_rate = (station.total_service_time / self.effective_duration) * 100 if station.total_service_time else 0
             print(f"Station {i + 1}: {occupancy_rate:.2f}%")
 
-
 simulation = QueueSimulation(num_stations, arrival_rate, duration)
 
 for policy in policies:
     print(f"\nRunning simulation with {policy} policy")
     simulation.run_simulation(policy)
+    
