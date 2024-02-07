@@ -2,9 +2,9 @@ import random
 from collections import deque
 
 num_stations = 5
-arrival_rate = 1 # average arrival rate of a new passenger in minutes
-duration = 100 # duration of the simultion in minutes
-policies = ["single_queue", "random_queue", "round_robin", "shortest_queue" ]
+arrival_rate = 1.2 # average arrival rate of a new passenger in minutes
+duration = 9999 # duration of the simultion in minutes
+policies = ["Single Queue", "Random Queue", "Round Robin", "Shortest Queue" ]
 
 # Represents arriving passenger
 class Passenger:
@@ -20,7 +20,7 @@ class ServiceStation:
         self.busy = False  # Keeps track if the station is occupied
         self.total_service_time = 0 # keeps track of total service time
         self.current_passenger = None # keeps track of current passenger
-        self.max_queue_length = 0 
+        self.max_queue_length = 0 # tracks max number of passengers waiting in each station's queue in real-time
         self.waiting_times = [] # store waiting times of passengers
 
 # Simulate queues
@@ -28,9 +28,9 @@ class QueueSimulation:
     def __init__(self, num_stations, arrival_rate, duration):
         self.num_stations = num_stations
         self.arrival_rate = arrival_rate
-        self.duration = duration
-        self.effective_duration = duration
-        self.max_queue_length = 0
+        self.duration = duration # set length of time simulation will run
+        self.effective_duration = duration # actual length of time simulation runs depending if passengers were in queues after duration finished
+        self.max_queue_length = 0 # tracks max number of passengers across all queues 
         self.stations = [ServiceStation() for _ in range(num_stations)] # creates 5 service stations
         self.time = 0  # represents current time within simulation
         self.current_station = 0  # For round robin policy
@@ -41,20 +41,20 @@ class QueueSimulation:
     def run_simulation(self, policy):
         self.policy = policy  # chooses specific policy for this run
         self.reset_simulation()  # Reset simulation state for the new run
-        while self.time < self.duration or self.any_passengers_remaining(): # while people are arriving or if any passengers remaining
+        while self.time < self.duration or self.any_passengers_remaining(): # if theres time left in the simulation or if any passengers remaining
             if self.time < self.duration:
-                self.handle_arrivals() # checks if a new passenger arrived based on the arrival rate
+                self.handle_arrivals() # creates new passenger instance and updates queue
             self.handle_departures() # checks to see if the passengers service is complete
             self.update_max_queue_length() 
-            if self.time % 100 == 0:  # Log at every 5-minute interval
+            if self.time % 1000 == 0:  # Log at every 100-minute interval
                 self.log_queue_stats()
             self.time += 1 # moves the simulation forward
-        self.effective_duration = self.time 
+        self.effective_duration = self.time # updates simulation time
         self.calculate_results()
 
     def update_max_queue_length(self):
-        if self.policy == "single_queue":
-            # Update only for the global queue in case of single_queue policy
+        if self.policy == "Single Queue":
+            # Update only for the global queue in case of Single Queue policy
             if len(self.global_queue) > self.max_queue_length:
                 self.max_queue_length = len(self.global_queue)
         else:
@@ -65,13 +65,20 @@ class QueueSimulation:
                     
     def log_queue_stats(self):
         print(f"\nTime: {self.time} minutes")
-        if self.policy == "single_queue":
-            print(f"Global Queue Length: {len(self.global_queue)}", "passengers")
+        
+        if self.policy == "Single Queue":
+            print(f"Global Queue Length: {len(self.global_queue)} passengers")
+            # Optionally, you can still log the status of each station under the single queue policy
+            for i, station in enumerate(self.stations):
+                status = "Busy" if station.busy else "Idle"
+                current_passenger_wait = self.time - station.current_passenger.start_service_time if station.current_passenger else "N/A"
+                print(f"Station {i+1}: {status}, Current Passenger Service Time: {current_passenger_wait}")
+        else:
+            for i, station in enumerate(self.stations):
+                status = "Busy" if station.busy else "Idle"
+                current_passenger_wait = self.time - station.current_passenger.start_service_time if station.current_passenger else "N/A"
+                print(f"Station {i+1}: {status}, Passenger Queue Length: {len(station.queue)}, Current Passenger Service Time: {current_passenger_wait}")
 
-        for i, station in enumerate(self.stations):
-            status = "Busy" if station.busy else "Idle"
-            current_passenger_wait = self.time - station.current_passenger.start_service_time if station.current_passenger else "N/A"
-            print(f"Station {i+1}: {status}, Passenger Queue Length: {len(station.queue)}, Current Passenger Service Time: {current_passenger_wait}")
     
     def any_passengers_remaining(self):
         stations_busy = any(station.busy for station in self.stations) # Check if any station is busy or if there are passengers in queues
@@ -91,26 +98,26 @@ class QueueSimulation:
             station.waiting_times = []
 
     def handle_arrivals(self):
-        if random.uniform(0, 1) < self.arrival_rate: 
-            new_passenger = Passenger(self.time) # creates new passenger with arrival time 
-            self.total_passengers.append(new_passenger)  # Track all passengers
-            if self.policy == "single_queue":
+        if random.uniform(0, 1) < self.arrival_rate: # periodically checks for new arrivals
+            new_passenger = Passenger(self.time) # creates new passenger instance with simulation time 
+            self.total_passengers.append(new_passenger)  # Track number of passengers by adding passenger
+            if self.policy == "Single Queue":
                 self.global_queue.append(new_passenger) # if the policy is a single queue then just add the new passenger
             else:
                 self.select_station().queue.append(new_passenger) # otherwise add passenger to other queue based on policy
                 
     def select_station(self):
-        if self.policy == "round_robin":
+        if self.policy == "Round Robin":
             station = self.stations[self.current_station] # sets station variable to the current station
-            self.current_station = (self.current_station + 1) % self.num_stations # makes sure it stays within the range of available stations
+            self.current_station = (self.current_station + 1) % self.num_stations # makes sure it stays within the range of available stations but updates current station to next 
             return station
-        elif self.policy == "shortest_queue":
+        elif self.policy == "Shortest Queue":
             return min(self.stations, key=lambda x: len(x.queue)) # finds the shortest length of each stations queue
-        elif self.policy == "random_queue":
+        elif self.policy == "Random Queue":
             return random.choice(self.stations) # randomly chooses a station 
 
     def handle_departures(self):
-        single_queue = self.policy == "single_queue"
+        single = self.policy == "Single Queue"
         for station in self.stations:  # iterates through each station
             if station.busy and station.current_passenger:  # if the station is busy and has a current passenger
                 # checks if passenger's service time finished
@@ -121,9 +128,9 @@ class QueueSimulation:
                     station.current_passenger = None  # removes passenger
             if not station.busy:
                 next_passenger = None
-                if single_queue and self.global_queue:  # checks if passengers are in single queue
+                if single and self.global_queue:  # checks if passengers are in single queue
                     next_passenger = self.global_queue.popleft()  # removes next passenger from global queue
-                elif not single_queue and station.queue:
+                elif not single and station.queue:
                     next_passenger = station.queue.popleft()  # removes next passenger from station queue
 
                 if next_passenger:
@@ -140,7 +147,7 @@ class QueueSimulation:
     def calculate_results(self):
                    
         print(f"\nSimulation Duration in Minutes: {self.effective_duration}")
-        if self.policy == "single_queue":
+        if self.policy == "Single Queue":
             print("Maximum Global Queue Length:", self.max_queue_length, "passengers")
         else:
             print("Maximum Queue Lengths for Each Station:")
