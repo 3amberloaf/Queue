@@ -34,6 +34,17 @@
 
 This queue simulation program is designed to model the flow of passengers through 5 service stations, using various queue management policies. It simulates the arrival, service, and departure of passengers, allowing the analysis of queue lengths, waiting times, and service station occupancy rates.
 
+### Requirements
+- Python 3.x
+
+## Usage
+
+To run the simulation, execute the script with Python:
+
+```bash
+python3 queue_simulation.py
+```
+
 # Queue Management Policies
 
 This documentation will highlight the following four queue management policies; single queue, shortest queue, round robin, and random queue. 
@@ -69,17 +80,6 @@ The random queue policy will assign each arriving passenger to a random service 
 The diagram below demonstrates how each customer is arbitrarily assigned to a queue without taking into consideration any impacting factors.
 
 ![alt text](image-8.png)
-
-### Requirements
-- Python 3.x
-
-## Usage
-
-To run the simulation, execute the script with Python:
-
-```bash
-python3 queue_simulation.py
-```
 
 # Classes
 
