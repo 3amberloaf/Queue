@@ -46,7 +46,7 @@ class QueueSimulation:
                 self.handle_arrivals() # creates new passenger instance and updates queue
             self.handle_departures() # checks to see if the passengers service is complete
             self.update_max_queue_length() 
-            if self.time % 1000 == 0:  # Log at every 100-minute interval
+            if self.time % 10000 == 0:  # Log at every 1000-minute interval
                 self.log_queue_stats()
             self.time += 1 # moves the simulation forward
         self.effective_duration = self.time # updates simulation time
@@ -54,11 +54,9 @@ class QueueSimulation:
 
     def update_max_queue_length(self):
         if self.policy == "Single Queue":
-            # Update only for the global queue in case of Single Queue policy
             if len(self.global_queue) > self.max_queue_length:
                 self.max_queue_length = len(self.global_queue)
         else:
-            # Update for each station's queue
             for station in self.stations:
                 if len(station.queue) > station.max_queue_length:
                     station.max_queue_length = len(station.queue)
@@ -68,7 +66,6 @@ class QueueSimulation:
         
         if self.policy == "Single Queue":
             print(f"Global Queue Length: {len(self.global_queue)} passengers")
-            # Optionally, you can still log the status of each station under the single queue policy
             for i, station in enumerate(self.stations):
                 status = "Busy" if station.busy else "Idle"
                 current_passenger_wait = self.time - station.current_passenger.start_service_time if station.current_passenger else "N/A"
@@ -132,17 +129,14 @@ class QueueSimulation:
                     next_passenger = self.global_queue.popleft()  # removes next passenger from global queue
                 elif not single and station.queue:
                     next_passenger = station.queue.popleft()  # removes next passenger from station queue
-
                 if next_passenger:
                     # Calculate waiting time as the current time minus the passenger's arrival time
                     waiting_time = self.time - next_passenger.arrival_time
                     station.waiting_times.append(waiting_time)  # Record waiting time for this passenger
-
                     # Begin servicing the next passenger
                     station.current_passenger = next_passenger
                     station.busy = True
                     station.current_passenger.start_service_time = self.time  # sets the service time to current time
-
 
     def calculate_results(self):
                    
@@ -174,4 +168,3 @@ simulation = QueueSimulation(num_stations, arrival_rate, duration)
 for policy in policies:
     print(f"\nRunning simulation with {policy} policy")
     simulation.run_simulation(policy)
-    
