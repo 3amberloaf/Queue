@@ -34,31 +34,35 @@
 
 This queue simulation program is designed to model the flow of passengers through 5 service stations, using various queue management policies. It simulates the arrival, service, and departure of passengers, allowing the analysis of queue lengths, waiting times, and service station occupancy rates.
 
-# Single Queue
+# Queue Management Policies
+
+This documentation will highlight the following four queue management policies; single queue, shortest queue, round robin, and random queue. 
+
+## Single Queue
 
 The single queue policy joins all passengers in one global queue, regardless of which service station they will use. Passengers will move to the first available service station, resulting in a First-In-First-Out scheduling policy.
 
-This queue system is common in ticket booths or store lines, when the order of the customers matter but the station being services at does not. Unfortunately, this policy can lead to high waiting times when all stations are busy. The diagram below demonstrates the process of customers entering a common queue in FIFO, recieving service, and departing. 
+This queue system is common in ticket booths or store lines, when the order of the customers matter but the station being serviced at does not. Unfortunately, this policy can lead to high waiting times when all stations are busy. The diagram below demonstrates the process of customers entering a common queue in FIFO, recieving service, and departing. 
 
 ![alt text](image-1.png)
 
-# Shortest Queue
+## Shortest Queue
 
 The shortest queue policy focuses on diverting passengers to the service station with the shortest queue at the time of their arrival. This method will minimize a passenger's waiting time and help balance the load between the five stations.
 
-This queue system is common in supermarket checkouts where each station operates independently of each other and customers focus on service speed rather. As shown in the image below, the jobs(customers) are being directed to (by the job dispatcher) to the queue with the shortest line. 
+This queue system is common in supermarket checkouts where each station operates independently of each other and customers main focus is on service speed. As shown in the image below, the jobs(customers) are being directed (by the job dispatcher) to the queue with the shortest line. 
 
 ![alt text](image-3.png)
 
-# Round Robin
+## Round Robin
 
-The round robin policy will assign passengers to service stations in a fixed order, regardless of the stations queue length. After reaching the fifth station, it loops back to the first and begins assigning again in the same order. This policy provides an equal distribution of passengers across stations, but does not take into account varying service times and queue lengths.
+The round robin policy will assign passengers to service stations in a cyclical fixed order, regardless of the stations queue length. After reaching the fifth station, it loops back to the first and begins assigning again in the same order. This policy provides an equal distribution of passengers across stations, but does not take into account varying service times and queue lengths.
 
 In many operating systems, this policy will invoke a 'time slice' which is a fixed number of time units before the OS returns a process to the ready state. In our scenario, we did not allow for time slices because that is not realistic. However, the chart below shows five processes arriving at different times and a time slice of 3. As we can see, the job dispatcher goes from P1 --> P2 --> P1. In this example, the OS returned to P1 because P1 never finished due to a time slice and arrived before P3.  
 
 ![alt text](image-7.png)
 
-# Random Queue 
+## Random Queue 
 
 The random queue policy will assign each arriving passenger to a random service station each time. This system may lead to unequal distribution or unpredictability when testing.
 
@@ -68,7 +72,6 @@ The diagram below demonstrates how each customer is arbitrarily assigned to a qu
 
 ### Requirements
 - Python 3.x
-- No external libraries required beyond the Python Standard Library
 
 ## Usage
 
@@ -78,7 +81,7 @@ To run the simulation, execute the script with Python:
 python3 queue_simulation.py
 ```
 
-# Main Classes
+# Classes
 
 ## Passenger
 
@@ -109,33 +112,33 @@ python3 queue_simulation.py
 - total_passengers: List of all passengers that have arrived
 - policy: Current queue management policy
 
-## Functions
+# Functions
 
-### run_simulation(policy)
+## run_simulation(policy)
 This function will run the queue simulation under the specified queue management policy. It will begin by reseting the simulation to a clean state, handling the passenger arrivals and departures, updating the queue lengths, logging queue statistics, and finally calculating the results.
 
-### update_max_queue_length()
+## update_max_queue_length()
 This function will update the maximum queue length statistic based on the policy. This function tracks the maximum number of passengers waiting in the queue for the `Single Queue` policy or across all stations for other policies.
 
-### log_queue_stats()
+## log_queue_stats()
 This function tracks the real-time evolution of the queue and each service station at a specified interval. It displays information on queue lengths, whether stations are busy, and the current service time for the passenger being serviced.
 
-### any_passengers_remaining()
+## any_passengers_remaining()
 This function determines if any passengers are still waiting or being serviced, which ultimately tells the simulation if it should continue running beyond the predefined `duration`.
 
-### reset_simulation()
+## reset_simulation()
 This function will reset the simulation to its initial state by clearning all previous queues and stations, as well as preparing the system for a new run under a different policy.
 
-### handle_arrivals()
+## handle_arrivals()
 This function checks for the arrival of new passengers based on the arrival rate and adds them to the queue according to the current policy. A new `Passenger` instance will be created and queued if necessary.
 
-### select_station()
+## select_station()
 This function selects a service station for a new passenger based on the current queue management policy. 
 
-### handle_departures()
+## handle_departures()
 This function will process the passengers who's service has finished. It will check if the station is busy and service is completed, and then updating the station and passenger state accordingly.
 
-### calculate_results()
+## calculate_results()
 This function will calculate and print the simulation's final statistics, including maximum queue lengths, average waiting times, maximum waiting times, and service station occupancy rates. This function is called after the simulation ends to provide insights into the performance of the queue management policy used.
 
 # Analysis
@@ -144,7 +147,7 @@ The analysis below was taken with a duration of 9999, arrival rate of 1.2, and s
 
 ## Service Station Occupancy
 
-The rate of service station occupancy determines how often the station was servicing a passenger. 
+The rate of service station occupancy determines how busy the station was servicing a passenger. 
 
 - Single Queue: Each station reached almost a 100% occupancy rate, ranging from 99.93 - 99.99%.
 - Random Queue: Stations ranged between 90.94% to 99.97% occupancy rate.
@@ -153,7 +156,7 @@ The rate of service station occupancy determines how often the station was servi
 
 ## Average Waiting Time
 
-The average waiting time for each passenger was determined by sub
+The average waiting time finds the average time each passenger waiting at each station for each policy.
 
 - Single Queue: The global queue had an average waiting time was between 1995 and 1998 minutes. 
 - Random Queue: Each station had an average wait between 1661.38 and 2283.05 minutes.
@@ -178,4 +181,4 @@ The maximum waiting time finds the highest amount of time a passenger waiting fo
 
 # Conclusion
 
-Each policy displayed over a 90% occupancy rate across all five service stations, highlighting the constant busyness of the stations throughout the simulation. The single and shortest queue yielded consistently high rates, showing that they experienced little to no downtime and maximum station efficiency. Unfortunately, all policies struggled with high waiting times. However, the shortest queue proved to be the optimal choice if looking for swift, efficient service. 
+The data suggests that the Shortest Queue policy is the most effective strategy over extended periods of time. This policy manages to keep a good balance between maximum queue lengths, maintains lower average and maximum waiting times compared to other policies, and ensures high service station occupancy. By efficiently allocating passengers across the five stations, it prevents any single station from becoming bottlenecked, thus optimizing wait times and sustaining high occupancy rates. This approach demonstrates a comprehensive management of queues, ensuring both operational efficiency and an improved passenger experience.
