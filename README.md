@@ -55,7 +55,8 @@ The single queue policy joins all passengers in one global queue, regardless of 
 
 This queue system is common in ticket booths or store lines, when the order of the customers matter but the station being serviced at does not. Unfortunately, this policy can lead to high waiting times when all stations are busy. The diagram below demonstrates the process of customers entering a common queue in FIFO, recieving service, and departing. 
 
-![alt text](image-1.png)
+![alt text](images/image-1.png)
+
 
 ## Shortest Queue
 
@@ -63,7 +64,7 @@ The shortest queue policy focuses on diverting passengers to the service station
 
 This queue system is common in supermarket checkouts where each station operates independently of each other and customers main focus is on service speed. As shown in the image below, the jobs(customers) are being directed (by the job dispatcher) to the queue with the shortest line. 
 
-![alt text](image-3.png)
+![alt text](/images/image-3.png)
 
 ## Round Robin
 
@@ -71,7 +72,7 @@ The round robin policy will assign passengers to service stations in a cyclical 
 
 In many operating systems, this policy will invoke a 'time slice' which is a fixed number of time units before the OS returns a process to the ready state. In our scenario, we did not allow for time slices because that is not realistic. However, the chart below shows five processes arriving at different times and a time slice of 3. As we can see, the job dispatcher goes from P1 --> P2 --> P1. In this example, the OS returned to P1 because P1 never finished due to a time slice and arrived before P3.  
 
-![alt text](image-7.png)
+![alt text](/images/image-7.png)
 
 ## Random Queue 
 
@@ -79,7 +80,7 @@ The random queue policy will assign each arriving passenger to a random service 
 
 The diagram below demonstrates how each customer is arbitrarily assigned to a queue without taking into consideration any impacting factors.
 
-![alt text](image-8.png)
+![alt text](/images/image-8.png)
 
 # Classes
 
